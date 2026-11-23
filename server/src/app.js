@@ -11,13 +11,17 @@ app.use(cors());
 app.use(express.json());
 
 // Health check API
+
 app.get("/api/health", (req, res) => {
     res.status(200).json({
         success: true,
         message: "Project-2 backend is running",
-        service: "NexusFlow API"
+        service: "NexusFlow API",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
     });
 });
+
 
 // Handle unknown routes
 app.use((req, res) => {
