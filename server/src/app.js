@@ -18,7 +18,9 @@ app.get("/api/health", (req, res) => {
         message: "Project-2 backend is running",
         service: "NexusFlow API",
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        apiVersion: "1.0.0",
+        environment: process.env.NODE_ENV || "development"
     });
 });
 
