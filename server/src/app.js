@@ -10,6 +10,13 @@ app.use(cors());
 // Parse incoming JSON data
 app.use(express.json());
 
+// Log incoming API requests
+app.use((req, res, next) => {
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 // Health check API
 
 app.get("/api/health", (req, res) => {
