@@ -1,4 +1,4 @@
-
+const deviceRoutes = require("./routes/deviceRoutes");
 const express = require("express");
 const cors = require("cors");
 
@@ -31,7 +31,7 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-
+app.use("/api/devices", deviceRoutes);
 // Handle unknown routes
 app.use((req, res) => {
     res.status(404).json({
