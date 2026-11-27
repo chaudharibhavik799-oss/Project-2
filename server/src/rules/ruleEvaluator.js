@@ -1,18 +1,7 @@
 
-/**
- * NexusFlow Rule Evaluator
- *
- * Compares processed sensor readings against
- * configured rules and identifies triggered rules.
- */
+const { validateRule, loadRules } = require("./ruleEngine");
 
-const {
-    validateRule,
-    loadRules
-} = require("./ruleEngine");
-
-// Compare a sensor value with a rule threshold
-const compareValues = (actualValue, operator, threshold) => {
+function compareValues(actualValue, operator, threshold) {
     switch (operator) {
         case ">":
             return actualValue > threshold;
@@ -33,16 +22,13 @@ const compareValues = (actualValue, operator, threshold) => {
             return actualValue !== threshold;
 
         default:
-            throw new Error(
-                `Unsupported comparison operator: ${operator}`
-            );
+            throw new Error(`Unsupported operator: ${operator}`);
     }
-};
+}
 
-// Evaluate one rule against a telemetry reading
-const evaluateRule = (reading, rule) => {
-    if (!reading || typeof reading !== "object") {
-        throw new Error("Valid telemetry reading is required");
+function evaluateRule(reading, rule) {
+    if (!reading || typeof reading !== "object" || Array.isArray(reading)) {
+        throw new Error("Invalid telemetry reading");
     }
 
     validateRule(rule);
@@ -61,9 +47,7 @@ const evaluateRule = (reading, rule) => {
         typeof actualValue !== "number" ||
         !Number.isFinite(actualValue)
     ) {
-        throw new Error(
-            `Invalid telemetry value for ${rule.metric}`
-        );
+        throw new Error(`Invalid reading for metric: ${rule.metric}`);
     }
 
     const triggered = compareValues(
@@ -83,31 +67,30 @@ const evaluateRule = (reading, rule) => {
         severity: rule.severity,
         triggered
     };
-};
+}
 
-// Evaluate all enabled rules against one reading
-const evaluateTelemetry = (reading, rules = loadRules()) => {
-    if (!reading || typeof reading !== "object") {
-        throw new Error("Valid telemetry reading is required");
+function evaluateTelemetry(reading, rules = loadRules()) {
+    if (!Array.isArray(rules)) {
+        throw new Error("Rules must be an array");
     }
 
     const results = rules.map((rule) =>
         evaluateRule(reading, rule)
     );
 
+    const triggeredRules = results.filter(
+        (result) => result.triggered
+    );
+
     return {
         deviceId: reading.deviceId,
         timestamp: reading.timestamp,
         totalRules: results.length,
-        triggeredCount: results.filter(
-            (result) => result.triggered
-        ).length,
+        triggeredCount: triggeredRules.length,
         results,
-        triggeredRules: results.filter(
-            (result) => result.triggered
-        )
+        triggeredRules
     };
-};
+}
 
 module.exports = {
     compareValues,

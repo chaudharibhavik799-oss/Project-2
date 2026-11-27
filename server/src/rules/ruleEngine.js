@@ -1,11 +1,4 @@
 
-/**
- * NexusFlow Rule Engine
- *
- * Validates and prepares configured rules
- * for future telemetry evaluation.
- */
-
 const configuredRules = require("./ruleConfig");
 
 const supportedMetrics = [
@@ -28,17 +21,16 @@ const supportedSeverities = [
     "critical"
 ];
 
-// Validate an individual rule
-const validateRule = (rule) => {
+function validateRule(rule) {
     if (!rule || typeof rule !== "object" || Array.isArray(rule)) {
         throw new Error("Rule must be a valid object");
     }
 
-    if (!rule.id || typeof rule.id !== "string") {
+    if (typeof rule.id !== "string" || !rule.id.trim()) {
         throw new Error("Rule ID is required");
     }
 
-    if (!rule.name || typeof rule.name !== "string") {
+    if (typeof rule.name !== "string" || !rule.name.trim()) {
         throw new Error("Rule name is required");
     }
 
@@ -54,7 +46,7 @@ const validateRule = (rule) => {
         typeof rule.threshold !== "number" ||
         !Number.isFinite(rule.threshold)
     ) {
-        throw new Error("Rule threshold must be a valid number");
+        throw new Error("Threshold must be a finite number");
     }
 
     if (!supportedSeverities.includes(rule.severity)) {
@@ -62,30 +54,32 @@ const validateRule = (rule) => {
     }
 
     if (typeof rule.enabled !== "boolean") {
-        throw new Error("Rule enabled status must be boolean");
+        throw new Error("Enabled must be true or false");
     }
 
     return true;
-};
+}
 
-// Validate all configured rules
-const loadRules = (rules = configuredRules) => {
+function loadRules(rules = configuredRules) {
     if (!Array.isArray(rules)) {
-        throw new Error("Rules must be provided as an array");
+        throw new Error("Rules must be an array");
     }
 
-    rules.forEach(validateRule);
+    const ids = new Set();
 
-    const ruleIds = rules.map((rule) => rule.id);
+    rules.forEach((rule) => {
+        validateRule(rule);
 
-    if (new Set(ruleIds).size !== ruleIds.length) {
-        throw new Error("Duplicate rule IDs are not allowed");
-    }
+        if (ids.has(rule.id)) {
+            throw new Error(`Duplicate rule ID: ${rule.id}`);
+        }
+
+        ids.add(rule.id);
+    });
 
     return rules.map((rule) => ({ ...rule }));
-};
+}
 
-// Export Rule Engine functions
 module.exports = {
     validateRule,
     loadRules

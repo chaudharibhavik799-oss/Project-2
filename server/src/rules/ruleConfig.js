@@ -5,10 +5,11 @@
  * Stores configurable rules for IoT sensor monitoring.
  */
 
+
 const rules = [
     {
         id: "RULE001",
-        name: "High Temperature Alert",
+        name: "High Temperature Warning",
         metric: "temperature",
         operator: ">",
         threshold: 40,
@@ -26,7 +27,7 @@ const rules = [
     },
     {
         id: "RULE003",
-        name: "High Humidity Alert",
+        name: "High Humidity Warning",
         metric: "humidity",
         operator: ">",
         threshold: 80,
@@ -35,7 +36,7 @@ const rules = [
     },
     {
         id: "RULE004",
-        name: "Low Pressure Alert",
+        name: "Low Pressure Warning",
         metric: "pressure",
         operator: "<",
         threshold: 25,
