@@ -2,6 +2,7 @@ const deviceRoutes = require("./routes/deviceRoutes");
 const express = require("express");
 const cors = require("cors");
 const telemetryRoutes = require("./routes/telemetryRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/devices", deviceRoutes);
 app.use("/api/telemetry", telemetryRoutes);
+app.use("/api/alerts", alertRoutes);
 // Handle unknown routes
 app.use((req, res) => {
     res.status(404).json({
