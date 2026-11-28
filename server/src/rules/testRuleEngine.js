@@ -59,7 +59,7 @@ assert.throws(
         ...validRule,
         threshold: "high"
     }),
-    /threshold must be a valid number/
+    /Threshold must be a finite number/
 );
 
 console.log("Invalid threshold test passed!");
@@ -81,7 +81,7 @@ assert.throws(
         validRule,
         { ...validRule, name: "Duplicate Rule" }
     ]),
-    /Duplicate rule IDs/
+    /Duplicate rule ID/
 );
 
 console.log("Duplicate rule test passed!");
@@ -89,7 +89,7 @@ console.log("Duplicate rule test passed!");
 // Test 8: Reject non-array input
 assert.throws(
     () => loadRules(null),
-    /Rules must be provided as an array/
+    /Rules must be an array/
 );
 
 console.log("Invalid rule collection test passed!");

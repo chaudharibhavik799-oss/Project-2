@@ -1,6 +1,7 @@
 
 const { validateRule, loadRules } = require("./ruleEngine");
 
+// Compare an actual sensor value with a configured threshold.
 function compareValues(actualValue, operator, threshold) {
     switch (operator) {
         case ">":
@@ -26,16 +27,24 @@ function compareValues(actualValue, operator, threshold) {
     }
 }
 
+// Evaluate one rule against one telemetry reading.
 function evaluateRule(reading, rule) {
-    if (!reading || typeof reading !== "object" || Array.isArray(reading)) {
+    if (
+        !reading ||
+        typeof reading !== "object" ||
+        Array.isArray(reading)
+    ) {
         throw new Error("Invalid telemetry reading");
     }
 
     validateRule(rule);
 
+    // Ignore disabled rules.
     if (!rule.enabled) {
         return {
             ruleId: rule.id,
+            ruleName: rule.name,
+            deviceId: reading.deviceId,
             triggered: false,
             reason: "Rule is disabled"
         };
@@ -47,7 +56,9 @@ function evaluateRule(reading, rule) {
         typeof actualValue !== "number" ||
         !Number.isFinite(actualValue)
     ) {
-        throw new Error(`Invalid reading for metric: ${rule.metric}`);
+        throw new Error(
+            `Invalid reading for metric: ${rule.metric}`
+        );
     }
 
     const triggered = compareValues(
@@ -61,34 +72,43 @@ function evaluateRule(reading, rule) {
         ruleName: rule.name,
         deviceId: reading.deviceId,
         metric: rule.metric,
-        actualValue,
+        actualValue: actualValue,
         operator: rule.operator,
         threshold: rule.threshold,
         severity: rule.severity,
-        triggered
+        triggered: triggered
     };
 }
 
+// Evaluate all configured rules against one telemetry reading.
 function evaluateTelemetry(reading, rules = loadRules()) {
+    if (
+        !reading ||
+        typeof reading !== "object" ||
+        Array.isArray(reading)
+    ) {
+        throw new Error("Invalid telemetry reading");
+    }
+
     if (!Array.isArray(rules)) {
         throw new Error("Rules must be an array");
     }
 
-    const results = rules.map((rule) =>
-        evaluateRule(reading, rule)
-    );
+    const results = rules.map((rule) => {
+        return evaluateRule(reading, rule);
+    });
 
-    const triggeredRules = results.filter(
-        (result) => result.triggered
-    );
+    const triggeredRules = results.filter((result) => {
+        return result.triggered === true;
+    });
 
     return {
         deviceId: reading.deviceId,
         timestamp: reading.timestamp,
         totalRules: results.length,
         triggeredCount: triggeredRules.length,
-        results,
-        triggeredRules
+        results: results,
+        triggeredRules: triggeredRules
     };
 }
 
